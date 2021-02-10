@@ -10,37 +10,90 @@ class AnimAlgos(QWidget):
         super().__init__()
         self.timer = QTimer()
         self.timer.timeout.connect(self.transform)
-        self.x = 50
-        self.y = 50
         self.initUI()
 
     def initUI(self):
-        self.setGeometry(300, 300, 600, 600)
+        self.setGeometry(300, 300, 900, 600)
+        self.zero = (self.width()//2, self.height()//2)
+        self.delay = 40
+        self.total_rot = 0
         self.setWindowTitle('Matrix')
+        self.createShape()
         self.show()
 
+    def createShape(self):
+        self.shape = [
+            [50, 50, 1],
+            [20, 80, 1],
+            [-40, 80, 1],
+            [-70, 120, 1],
+            [-10, 120, 1],
+            [20, 80, 1]
+        ]
+        self.rotate(10)
+
     def transform(self):
-        phi = math.pi/90
-        rot = np.aCrerray([
-            [math.cos(phi), math.sin(phi)],
-            [-1*math.sin(phi), math.cos(phi)]
-        ])
-        #self.x += 1
-        #self.y += 1
-        [self.x, self.y] = np.array([self.x, self.y]).dot(rot)
+        phi=4
+        self.total_rot = (self.total_rot+phi)%360
+        print(self.total_rot)
+        if math.cos(self.total_rot * math.pi / 180) > 0.0:
+            self.rotate(phi*abs(math.cos(self.total_rot * math.pi / 180))**2)    # Looks complicated, gravity pretend
+        elif math.cos(self.total_rot * math.pi / 180) < -0.0:
+            self.rotate(phi*abs(math.cos(self.total_rot * math.pi / 180))**2 * -1)
+        self.transfer(0, 1)
+        self.resize(1.002, 1.002)
         self.update()
+
+
+    def rotate(self, degrees):
+        phi = degrees * math.pi / 180
+        rot = np.array([
+            [math.cos(phi),      math.sin(phi), 0],
+            [-1 * math.sin(phi), math.cos(phi), 0],
+            [0,                  0,             1]
+        ])
+        for i in range(len(self.shape)):
+            self.shape[i] = np.array(self.shape[i]).dot(rot)
+
+    def transfer(self, x, y):
+        move = np.array([
+            [1, 0, 0],
+            [0, 1, 0],
+            [x, y, 1],
+        ])
+        for i in range(len(self.shape)):
+            self.shape[i] = np.array(self.shape[i]).dot(move)
+
+    def resize(self, a, b):
+        scale = np.array([
+            [a, 0, 0],
+            [0, b, 0],
+            [0, 0, 1],
+        ])
+        for i in range(len(self.shape)):
+            self.shape[i] = np.array(self.shape[i]).dot(scale)
+
 
     def paintEvent(self, event):
         width = self.size().width()
         height = self.size().height()
         painter = QPainter(self)
         pen = QPen(Qt.black)
-        pen.setWidth(10)
+        pen.setWidth(4)
         painter.setPen(pen)
 
-        painter.drawPoint(self.x+150, self.y+150)
-        self.timer.start(5)
+        #painter.drawLine(self.zero[0],0,self.zero[0],self.height())
 
+        self.drawShape(painter)
+
+    def drawShape(self, painter):
+        for i in range(len(self.shape)-1):
+            painter.drawLine(self.shape[i][0]+self.zero[0],
+                             self.shape[i][1],
+                             self.shape[i+1][0] + self.zero[0],
+                             self.shape[i + 1][1]
+                             )
+        self.timer.start(self.delay)
 
 if __name__ == "__main__":
     import sys
