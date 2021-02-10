@@ -15,7 +15,7 @@ class AnimAlgos(QWidget):
     def initUI(self):
         self.setGeometry(300, 300, 900, 600)
         self.zero = (self.width()//2, self.height()//2)
-        self.delay = 40
+        self.delay = 15
         self.total_rot = 0
         self.setWindowTitle('Matrix')
         self.createShape()
@@ -28,20 +28,21 @@ class AnimAlgos(QWidget):
             [-40, 80, 1],
             [-70, 120, 1],
             [-10, 120, 1],
-            [20, 80, 1]
+            [20, 80, 1],
+            [-20, 100, 1]
         ]
         self.rotate(10)
 
     def transform(self):
-        phi=4
+        phi=2
         self.total_rot = (self.total_rot+phi)%360
         print(self.total_rot)
         if math.cos(self.total_rot * math.pi / 180) > 0.0:
             self.rotate(phi*abs(math.cos(self.total_rot * math.pi / 180))**2)    # Looks complicated, gravity pretend
-        elif math.cos(self.total_rot * math.pi / 180) < -0.0:
+        elif math.cos(self.total_rot * math.pi / 180) < 0.0:
             self.rotate(phi*abs(math.cos(self.total_rot * math.pi / 180))**2 * -1)
         self.transfer(0, 1)
-        self.resize(1.002, 1.002)
+        self.resize(1.002)
         self.update()
 
 
@@ -64,10 +65,11 @@ class AnimAlgos(QWidget):
         for i in range(len(self.shape)):
             self.shape[i] = np.array(self.shape[i]).dot(move)
 
-    def resize(self, a, b):
+
+    def resize(self, a):
         scale = np.array([
             [a, 0, 0],
-            [0, b, 0],
+            [0, a, 0],
             [0, 0, 1],
         ])
         for i in range(len(self.shape)):
